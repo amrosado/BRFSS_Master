@@ -5,7 +5,7 @@ import re
 import lxml
 import pycurl
 
-class NHANESBRipper:
+class CMSRipper:
 
     #Initalize buffers and parsing objects
     currentBuffer = io.BytesIO()
@@ -22,14 +22,9 @@ class NHANESBRipper:
     # listMMSAQuestUrl = 'http://apps.nccd.cdc.gov/BRFSS-SMART/ListMMSAQuest.asp?'
     # yearsUrl = 'http://apps.nccd.cdc.gov/brfss/years.asp?'
     # SelMMSAPrevDataUrl = 'http://apps.nccd.cdc.gov/BRFSS-SMART/SelMMSAPrevData.asp?'
-    # #qkeyDetermineUrl = 'http://apps.nccd.cdc.gov/brfss/display.asp?cat=AC&yr=212&state=US&qkey='
+    # #qkeyDetermineUrl = 'http://apps.nccd.cdc.gov/brfss/display.asp?cat=AC&yr=2012&state=US&qkey='
 
-
-    variableListNHANESUrl = 'http://wwwn.cdc.gov/nchs/nhanes/search/variablelist.aspx?Component=Non-Public'
-    dataPageNHANESUrl = 'http://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Demographics&CycleBeginYear='
-
-    years = ['2013', '2011', '2009', '2007', '2005', '2003', '2001', '1999']
-
+    dataCMSUrl = 'https://data.cms.gov/'
 
     # def iterqkey(self):
     #     i = 0
