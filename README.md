@@ -23,6 +23,8 @@ http://apps.nccd.cdc.gov/BRFSS-SMART/MMSARiskChart.asp?MMSA=327&yr=2012&qkey=836
 
 http://apps.nccd.cdc.gov/BRFSS-SMART/SelMMSAPrevData.asp?
 
+http://apps.nccd.cdc.gov/brfss/years.asp?yr=2012&state=All&cat=CV
+
 Need to know all possible qkeys, MMSA, cat
 
 urlkeys = {
