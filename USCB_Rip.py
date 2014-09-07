@@ -4,6 +4,8 @@ import io
 import re
 import lxml
 import pycurl
+import json
+import collections
 
 class USCBRipper:
 
@@ -14,6 +16,7 @@ class USCBRipper:
     pastCookies = []
     currentHTML = lxml
     currentRE = re
+    currentJson = {}
 
     # #Urls of interest
     # displayUrl = 'http://apps.nccd.cdc.gov/brfss/display.asp?'
@@ -25,7 +28,8 @@ class USCBRipper:
     # #qkeyDetermineUrl = 'http://apps.nccd.cdc.gov/brfss/display.asp?cat=AC&yr=2012&state=US&qkey='
 
     USCBUrl = 'http://api.census.gov/data/'
-    USCBYears = []
+    USCBYears = ['1990', '2000', '2007', '2010', '2011', '2012', '2013']
+    yearsJson = []
 
 
     # def iterqkey(self):
@@ -35,15 +39,29 @@ class USCBRipper:
     #         self.selectBRFSSUrl(iterUrl)
     #         self.returnCurrentBrfssUrlHTML()
 
+    def storeAllYearsJson(self):
+        for i in self.USCBYears:
+            yearUrl = self.USCBUrl + i
+            self.selectCurlUrl(yearUrl)
+            self.yearsJson.append([i, self.loadJsonFromCurl()])
+            #self.yearsJson.append(self.loadJsonFromCurl())
+
+    def loadJsonFromCurl(self):
+        self.curlObject.perform()
+        jsonUTF8 = self.currentBuffer.getvalue().decode('UTF-8')
+        currentJsonLoad = json.JSONEncoder().iterencode(jsonUTF8)
+        return currentJsonLoad
+
+
     def returnCurrentBrfssUrlHTML(self):
         self.curlObject.perform()
-        return self.currentBuffer.getbuffer()
+        return self.currentBuffer.getvalue(self).decode('UTF-32')
 
     def grabCurrentBRFSSInformation(self):
         pass
 
     #Configures curl object for new url to write to object buffer
-    def selectBRFSSUrl(self, brfssUrl):
+    def selectCurlUrl(self, brfssUrl):
         self.curlObject.setopt(pycurl.URL, brfssUrl)
         self.curlObject.setopt(pycurl.HTTPHEADER, ["Accept:"])
         self.curlObject.setopt(pycurl.WRITEFUNCTION, self.currentBuffer.write)
@@ -55,3 +73,7 @@ class USCBRipper:
 
     def __init__(self):
         pass
+
+uscbParser = USCBRipper()
+uscbParser.storeAllYearsJson()
+test = uscbParser
