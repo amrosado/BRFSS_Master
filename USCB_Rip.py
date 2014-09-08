@@ -30,6 +30,8 @@ class USCBRipper:
     USCBUrl = 'http://api.census.gov/data/'
     USCBYears = ['1990', '2000', '2007', '2010', '2011', '2012', '2013']
     yearsJson = []
+    jsonLoadAll = []
+    webServiceUrls = []
 
 
     # def iterqkey(self):
@@ -38,42 +40,44 @@ class USCBRipper:
     #         iterUrl = self.qkeyDetermineUrl + str(i)
     #         self.selectBRFSSUrl(iterUrl)
     #         self.returnCurrentBrfssUrlHTML()
+    def findAllWebServiceUrls(self):
+        for i in self.yearsJson:
+            selectedJson = i[1]
+            for k in selectedJson:
+                self.webServiceUrls.append(k['webService'])
 
     def storeAllYearsJson(self):
         for i in self.USCBYears:
             yearUrl = self.USCBUrl + i
-            self.selectCurlUrl(yearUrl)
-            self.yearsJson.append([i, self.loadJsonFromCurl()])
-            #self.yearsJson.append(self.loadJsonFromCurl())
-
-    def loadJsonFromCurl(self):
-        self.curlObject.perform()
-        jsonUTF8 = self.currentBuffer.getvalue().decode('UTF-8')
-        currentJsonLoad = json.JSONEncoder().iterencode(jsonUTF8)
-        return currentJsonLoad
-
-
-    def returnCurrentBrfssUrlHTML(self):
-        self.curlObject.perform()
-        return self.currentBuffer.getvalue(self).decode('UTF-32')
+            curlBytes = self.curlUrl(yearUrl)
+            curlString = curlBytes.decode('UTF-8', 'replace')
+            curlJsonEncoded = json.loads(curlString)
+            self.yearsJson.append([i, curlJsonEncoded])
 
     def grabCurrentBRFSSInformation(self):
         pass
 
     #Configures curl object for new url to write to object buffer
-    def selectCurlUrl(self, brfssUrl):
-        self.curlObject.setopt(pycurl.URL, brfssUrl)
+    def curlUrl(self, url):
+        temporaryBuffer = io.BytesIO()
+
+        self.curlObject.setopt(pycurl.URL, url)
         self.curlObject.setopt(pycurl.HTTPHEADER, ["Accept:"])
-        self.curlObject.setopt(pycurl.WRITEFUNCTION, self.currentBuffer.write)
+        self.curlObject.setopt(pycurl.WRITEFUNCTION, temporaryBuffer.write)
         self.curlObject.setopt(pycurl.FOLLOWLOCATION, 1)
         self.curlObject.setopt(pycurl.MAXREDIRS, 10)
         self.curlObject.setopt(pycurl.COOKIEFILE, 'cookie.txt')
 
         self.currentCookies = self.curlObject.getinfo(pycurl.INFO_COOKIELIST)
 
+        self.curlObject.perform()
+
+        return temporaryBuffer.getvalue()
+
     def __init__(self):
         pass
 
 uscbParser = USCBRipper()
 uscbParser.storeAllYearsJson()
+uscbParser.findAllWebServiceUrls()
 test = uscbParser
