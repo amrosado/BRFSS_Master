@@ -5,6 +5,7 @@ import re
 import lxml
 import pycurl
 import json
+import pickle
 import collections
 
 class USCBRipper:
@@ -44,11 +45,15 @@ class USCBRipper:
     #         iterUrl = self.qkeyDetermineUrl + str(i)
     #         self.selectBRFSSUrl(iterUrl)
     #         self.returnCurrentBrfssUrlHTML()
+
     def propagateUSCBServices(self):
         for i in self.yearsJson:
             selectedJson = i[1]
             for k in selectedJson:
                 self.apiUrlComponents.append({'year' : i[0] , 'dataset' : [k['c_dataset']], 'variables' : [k['c_variablesLink']] , 'geography' : [k['c_geographyLink']], 'tags' : ['c_tagsLink'], 'services' : [k['webService']]})
+        file = open('apiUrlComponents.pickle', 'wb')
+        pickle.dump(self.apiUrlComponents, file)
+
 
     def propagateVariables(self):
         serviceVariables = []
@@ -56,10 +61,21 @@ class USCBRipper:
             variableJsonBytes = self.curlUrl(i['variables'][0])
             variableJsonString = variableJsonBytes.decode('UTF-8', 'replace')
             variableJson = json.loads(variableJsonString)
-            self.apiVariablesJson.append([i['dataset'] , variableJson])
+            variableYear = i['year']
+            self.apiVariablesJson.append([i['dataset'] , variableYear, variableJson])
         for i in self.apiVariablesJson:
-            for k in i[1]:
-                serviceVariables.append({'name' : k['name']})
+            for k in i[2]['variables']:
+                serviceVariables.append({'variable' : k})
+            self.apiVariables.append({'datasetName' : i[0], 'year': i[1],'variables' : serviceVariables})
+            serviceVariables = []
+        file = open('apiVariables.pickle', 'wb')
+        pickle.dump(self.apiVariables, file)
+
+
+    def propagateGeography(self):
+        serviceGeography = []
+        for i in self.apiUrlComponents:
+            pass
 
 
 
@@ -71,6 +87,8 @@ class USCBRipper:
             curlString = curlBytes.decode('UTF-8', 'replace')
             curlJsonEncoded = json.loads(curlString)
             self.yearsJson.append([i, curlJsonEncoded])
+        file = open('apiInfoAllYears.pickle', 'wb')
+        pickle.dump(self.yearsJson, file)
 
     def grabCurrentBRFSSInformation(self):
         pass
