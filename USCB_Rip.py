@@ -35,8 +35,8 @@ class USCBRipper:
     webServiceUrls = []
     apiUrlComponents = []
     apiUrlCalls = []
-
-
+    apiVariablesJson = []
+    apiVariables = []
 
     # def iterqkey(self):
     #     i = 0
@@ -50,9 +50,18 @@ class USCBRipper:
             for k in selectedJson:
                 self.apiUrlComponents.append({'year' : i[0] , 'dataset' : [k['c_dataset']], 'variables' : [k['c_variablesLink']] , 'geography' : [k['c_geographyLink']], 'tags' : ['c_tagsLink'], 'services' : [k['webService']]})
 
-    def propagateData(self):
+    def propagateVariables(self):
+        serviceVariables = []
         for i in self.apiUrlComponents:
-            pass
+            variableJsonBytes = self.curlUrl(i['variables'][0])
+            variableJsonString = variableJsonBytes.decode('UTF-8', 'replace')
+            variableJson = json.loads(variableJsonString)
+            self.apiVariablesJson.append([i['dataset'] , variableJson])
+        for i in self.apiVariablesJson:
+            for k in i[1]:
+                serviceVariables.append({'name' : k['name']})
+
+
 
 
     def storeAllYearsJson(self):
@@ -89,4 +98,5 @@ class USCBRipper:
 uscbParser = USCBRipper()
 uscbParser.storeAllYearsJson()
 uscbParser.propagateUSCBServices()
+uscbParser.propagateVariables()
 test = uscbParser
