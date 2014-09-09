@@ -29,9 +29,13 @@ class USCBRipper:
 
     USCBUrl = 'http://api.census.gov/data/'
     USCBYears = ['1990', '2000', '2007', '2010', '2011', '2012', '2013']
+    USCBKey = "daaba7a1a566a8cb884ef6b042e232b7a42d2b33"
     yearsJson = []
     jsonLoadAll = []
     webServiceUrls = []
+    apiUrlComponents = []
+    apiUrlCalls = []
+
 
 
     # def iterqkey(self):
@@ -40,11 +44,16 @@ class USCBRipper:
     #         iterUrl = self.qkeyDetermineUrl + str(i)
     #         self.selectBRFSSUrl(iterUrl)
     #         self.returnCurrentBrfssUrlHTML()
-    def findAllWebServiceUrls(self):
+    def propagateUSCBServices(self):
         for i in self.yearsJson:
             selectedJson = i[1]
             for k in selectedJson:
-                self.webServiceUrls.append(k['webService'])
+                self.apiUrlComponents.append({'year' : i[0] , 'dataset' : [k['c_dataset']], 'variables' : [k['c_variablesLink']] , 'geography' : [k['c_geographyLink']], 'tags' : ['c_tagsLink'], 'services' : [k['webService']]})
+
+    def propagateData(self):
+        for i in self.apiUrlComponents:
+            pass
+
 
     def storeAllYearsJson(self):
         for i in self.USCBYears:
@@ -79,5 +88,5 @@ class USCBRipper:
 
 uscbParser = USCBRipper()
 uscbParser.storeAllYearsJson()
-uscbParser.findAllWebServiceUrls()
+uscbParser.propagateUSCBServices()
 test = uscbParser
