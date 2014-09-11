@@ -31,13 +31,16 @@ class USCBRipper:
     USCBUrl = 'http://api.census.gov/data/'
     USCBYears = ['1990', '2000', '2007', '2010', '2011', '2012', '2013']
     USCBKey = "daaba7a1a566a8cb884ef6b042e232b7a42d2b33"
-    yearsJson = []
+
     jsonLoadAll = []
     webServiceUrls = []
+    apiYearsJson = []
     apiUrlComponents = []
     apiUrlCalls = []
     apiVariablesJson = []
     apiVariables = []
+    apiGeographyJson = []
+    apiGeography = []
 
     # def iterqkey(self):
     #     i = 0
@@ -45,9 +48,16 @@ class USCBRipper:
     #         iterUrl = self.qkeyDetermineUrl + str(i)
     #         self.selectBRFSSUrl(iterUrl)
     #         self.returnCurrentBrfssUrlHTML()
+    def loadAllPastApiPickles(self):
+        self.apiYearsJson = pickle.load(open('apiYearsJson.pickle', 'rb'))
+        self.apiUrlComponents = pickle.load(open('apiUrlComponents.pickle', 'rb'))
+        self.apiVariablesJson = pickle.load(open('apiVariablesJson.pickle', 'rb'))
+        self.apiVariables = pickle.load(open('apiVariables.pickle', 'rb'))
+        self.apiGeographyJson = pickle.load(open('apiGeographyJson.pickle', 'rb'))
+        self.apiGeography = pickle.load(open('apiGeography.pickle', 'rb'))
 
     def propagateUSCBServices(self):
-        for i in self.yearsJson:
+        for i in self.apiYearsJson:
             selectedJson = i[1]
             for k in selectedJson:
                 self.apiUrlComponents.append({'year' : i[0] , 'dataset' : [k['c_dataset']], 'variables' : [k['c_variablesLink']] , 'geography' : [k['c_geographyLink']], 'tags' : ['c_tagsLink'], 'services' : [k['webService']]})
@@ -63,19 +73,34 @@ class USCBRipper:
             variableJson = json.loads(variableJsonString)
             variableYear = i['year']
             self.apiVariablesJson.append([i['dataset'] , variableYear, variableJson])
+        file = open('apiVariablesJson.pickle', 'wb')
+        pickle.dump(self.apiVariablesJson, file)
         for i in self.apiVariablesJson:
             for k in i[2]['variables']:
                 serviceVariables.append({'variable' : k})
             self.apiVariables.append({'datasetName' : i[0], 'year': i[1],'variables' : serviceVariables})
             serviceVariables = []
-        file = open('apiVariables.pickle', 'wb')
-        pickle.dump(self.apiVariables, file)
+        file2 = open('apiVariables.pickle', 'wb')
+        pickle.dump(self.apiVariables, file2)
 
 
     def propagateGeography(self):
         serviceGeography = []
         for i in self.apiUrlComponents:
-            pass
+            geographyJsonBytes = self.curlUrl(i['geography'][0])
+            geographyJsonString = geographyJsonBytes.decode('UTF-8', 'replace')
+            geographyJson = json.loads(geographyJsonString)
+            geographyYear = i['year']
+            self.apiGeographyJson.append([i['dataset'] , geographyYear, geographyJson])
+        file = open('apiGeographyJson.pickle', 'wb')
+        pickle.dump(self.apiUrlComponents, file)
+        for i in self.apiVariablesJson:
+            for k in i[2]['variables']:
+                serviceGeography.append({'variable' : k})
+            self.apiGeography.append({'datasetName' : i[0], 'year': i[1],'geography' : serviceGeography})
+            serviceGeography = []
+        file = open('apiGeography.pickle', 'wb')
+        pickle.dump(self.apiGeography, file)
 
 
 
@@ -86,9 +111,9 @@ class USCBRipper:
             curlBytes = self.curlUrl(yearUrl)
             curlString = curlBytes.decode('UTF-8', 'replace')
             curlJsonEncoded = json.loads(curlString)
-            self.yearsJson.append([i, curlJsonEncoded])
-        file = open('apiInfoAllYears.pickle', 'wb')
-        pickle.dump(self.yearsJson, file)
+            self.apiYearsJson.append([i, curlJsonEncoded])
+        file = open('apiYearsJson.pickle', 'wb')
+        pickle.dump(self.apiYearsJson, file)
 
     def grabCurrentBRFSSInformation(self):
         pass
@@ -114,7 +139,9 @@ class USCBRipper:
         pass
 
 uscbParser = USCBRipper()
-uscbParser.storeAllYearsJson()
-uscbParser.propagateUSCBServices()
-uscbParser.propagateVariables()
+#uscbParser.storeAllYearsJson()
+#uscbParser.propagateUSCBServices()
+#uscbParser.propagateVariables()
+#uscbParser.propagateGeography()
+uscbParser.loadAllPastApiPickles()
 test = uscbParser
