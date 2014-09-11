@@ -42,6 +42,8 @@ class USCBRipper:
     apiGeographyJson = []
     apiGeography = []
 
+
+
     # def iterqkey(self):
     #     i = 0
     #     while(i < 10000):
@@ -55,6 +57,9 @@ class USCBRipper:
         self.apiVariables = pickle.load(open('apiVariables.pickle', 'rb'))
         self.apiGeographyJson = pickle.load(open('apiGeographyJson.pickle', 'rb'))
         self.apiGeography = pickle.load(open('apiGeography.pickle', 'rb'))
+
+    def propagateServiceData(self):
+        pass
 
     def propagateUSCBServices(self):
         for i in self.apiYearsJson:
@@ -75,10 +80,10 @@ class USCBRipper:
             self.apiVariablesJson.append([i['dataset'] , variableYear, variableJson])
         file = open('apiVariablesJson.pickle', 'wb')
         pickle.dump(self.apiVariablesJson, file)
-        for i in self.apiVariablesJson:
-            for k in i[2]['variables']:
-                serviceVariables.append({'variable' : k})
-            self.apiVariables.append({'datasetName' : i[0], 'year': i[1],'variables' : serviceVariables})
+        for k in self.apiVariablesJson:
+            for j in k[2]['variables']:
+                serviceVariables.append({'variable' : j})
+            self.apiVariables.append({'datasetName' : k[0], 'year': k[1],'variables' : serviceVariables})
             serviceVariables = []
         file2 = open('apiVariables.pickle', 'wb')
         pickle.dump(self.apiVariables, file2)
@@ -94,13 +99,19 @@ class USCBRipper:
             self.apiGeographyJson.append([i['dataset'] , geographyYear, geographyJson])
         file = open('apiGeographyJson.pickle', 'wb')
         pickle.dump(self.apiUrlComponents, file)
-        for i in self.apiVariablesJson:
-            for k in i[2]['variables']:
-                serviceGeography.append({'variable' : k})
-            self.apiGeography.append({'datasetName' : i[0], 'year': i[1],'geography' : serviceGeography})
-            serviceGeography = []
-        file = open('apiGeography.pickle', 'wb')
-        pickle.dump(self.apiGeography, file)
+
+        for k in self.apiGeographyJson:
+            geographyDic = k[2]
+            if 'fips' in geographyDic:
+                for j in geographyDic['fips']:
+                    serviceGeography.append({'fips' : j})
+            if 'default' in geographyDic:
+                for j in geographyDic['default']:
+                    serviceGeography.append({'default' : j})
+                self.apiGeography.append({'datasetName' : k[0], 'year': k[1],'geography' : serviceGeography})
+                serviceGeography = []
+        file2 = open('apiGeography.pickle', 'wb')
+        pickle.dump(self.apiGeography, file2)
 
 
 
@@ -139,9 +150,10 @@ class USCBRipper:
         pass
 
 uscbParser = USCBRipper()
-#uscbParser.storeAllYearsJson()
-#uscbParser.propagateUSCBServices()
-#uscbParser.propagateVariables()
-#uscbParser.propagateGeography()
-uscbParser.loadAllPastApiPickles()
+uscbParser.storeAllYearsJson()
+uscbParser.propagateUSCBServices()
+uscbParser.propagateVariables()
+uscbParser.propagateGeography()
+#uscbParser.loadAllPastApiPickles()
+uscbParser.propagateServiceData()
 test = uscbParser
