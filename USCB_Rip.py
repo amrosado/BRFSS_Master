@@ -63,7 +63,15 @@ class USCBRipper:
             currentUrl = i['services'][0]+self.USCBKey
             for k in self.apiVariables:
                 if ((k['datasetName'] == i['dataset']) and (k['year'] == i['year'])):
-                    pass
+                    for j in k['variables']:
+                        currentUrl = currentUrl+"?get="+j['variable']+"&for="
+                        for l in self.apiGeography:
+                            for p in l['geography']:
+                                if 'fips' in p:
+                                    currentUrl = currentUrl + p['fips']['name']
+                            data = self.curlUrl(currentUrl)
+                            dataString = data.decode('UTF-8')
+                            dataJson = json.loads(dataString, 'UTF-8')
 
 
 
